@@ -26,7 +26,7 @@ export function PlayerDashboard({ player }: PlayerDashboardProps) {
 
   const { data: recentGames, isLoading: recentLoading } = useQuery({
     queryKey: ["player-recent", player.id],
-    queryFn: () => nbaApi.getPlayerRecent(player.id),
+    queryFn: () => nbaApi.getPlayerRecent(player.id, 20),
   });
 
   const { data: vsTeamStats, isLoading: vsTeamLoading } = useQuery({
@@ -70,26 +70,78 @@ export function PlayerDashboard({ player }: PlayerDashboardProps) {
           {seasonLoading ? (
             <p className="text-muted-foreground text-center">Loading season stats...</p>
           ) : seasonStats ? (
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-              <div className="text-center">
-                <p className="text-4xl font-display font-bold text-primary">{seasonStats.PTS.toFixed(1)}</p>
-                <p className="text-sm text-muted-foreground mt-1">PTS</p>
+            <div className="space-y-6">
+              {/* Main Stats */}
+              <div>
+                <h3 className="text-sm font-semibold text-muted-foreground mb-3">MOYENNES SAISON</h3>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                  <div className="text-center bg-primary/10 p-4 rounded-lg">
+                    <p className="text-4xl font-display font-bold text-primary">{seasonStats.PTS.toFixed(1)}</p>
+                    <p className="text-sm text-muted-foreground mt-1">PTS</p>
+                  </div>
+                  <div className="text-center bg-nba-blue/10 p-4 rounded-lg">
+                    <p className="text-4xl font-display font-bold text-nba-blue">{seasonStats.REB.toFixed(1)}</p>
+                    <p className="text-sm text-muted-foreground mt-1">REB</p>
+                  </div>
+                  <div className="text-center bg-accent/10 p-4 rounded-lg">
+                    <p className="text-4xl font-display font-bold text-accent">{seasonStats.AST.toFixed(1)}</p>
+                    <p className="text-sm text-muted-foreground mt-1">AST</p>
+                  </div>
+                  <div className="text-center bg-secondary/50 p-4 rounded-lg">
+                    <p className="text-4xl font-display font-bold text-foreground">{seasonStats.FG3M.toFixed(1)}</p>
+                    <p className="text-sm text-muted-foreground mt-1">3PM</p>
+                  </div>
+                  <div className="text-center bg-secondary/50 p-4 rounded-lg">
+                    <p className="text-4xl font-display font-bold text-foreground">{seasonStats.MIN.toFixed(1)}</p>
+                    <p className="text-sm text-muted-foreground mt-1">MIN</p>
+                  </div>
+                </div>
               </div>
-              <div className="text-center">
-                <p className="text-4xl font-display font-bold text-nba-blue">{seasonStats.REB.toFixed(1)}</p>
-                <p className="text-sm text-muted-foreground mt-1">REB</p>
+
+              {/* Combo Stats for Betting */}
+              <div>
+                <h3 className="text-sm font-semibold text-muted-foreground mb-3">COMBOS PARIS SPORTIFS</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="text-center bg-gradient-to-br from-primary/20 to-primary/5 p-4 rounded-lg border border-primary/20">
+                    <p className="text-3xl font-display font-bold text-primary">{seasonStats.PRA.toFixed(1)}</p>
+                    <p className="text-sm text-muted-foreground mt-1">PTS+REB+AST</p>
+                  </div>
+                  <div className="text-center bg-gradient-to-br from-accent/20 to-accent/5 p-4 rounded-lg border border-accent/20">
+                    <p className="text-3xl font-display font-bold text-accent">{seasonStats.PA.toFixed(1)}</p>
+                    <p className="text-sm text-muted-foreground mt-1">PTS+AST</p>
+                  </div>
+                  <div className="text-center bg-gradient-to-br from-nba-blue/20 to-nba-blue/5 p-4 rounded-lg border border-nba-blue/20">
+                    <p className="text-3xl font-display font-bold text-nba-blue">{seasonStats.PR.toFixed(1)}</p>
+                    <p className="text-sm text-muted-foreground mt-1">PTS+REB</p>
+                  </div>
+                  <div className="text-center bg-secondary/50 p-4 rounded-lg border border-border">
+                    <p className="text-3xl font-display font-bold text-foreground">{seasonStats.AR.toFixed(1)}</p>
+                    <p className="text-sm text-muted-foreground mt-1">AST+REB</p>
+                  </div>
+                </div>
               </div>
-              <div className="text-center">
-                <p className="text-4xl font-display font-bold text-accent">{seasonStats.AST.toFixed(1)}</p>
-                <p className="text-sm text-muted-foreground mt-1">AST</p>
-              </div>
-              <div className="text-center">
-                <p className="text-4xl font-display font-bold text-foreground">{seasonStats.FG3M.toFixed(1)}</p>
-                <p className="text-sm text-muted-foreground mt-1">3PM</p>
-              </div>
-              <div className="text-center">
-                <p className="text-4xl font-display font-bold text-foreground">{seasonStats.MIN.toFixed(1)}</p>
-                <p className="text-sm text-muted-foreground mt-1">MIN</p>
+
+              {/* Additional Stats */}
+              <div>
+                <h3 className="text-sm font-semibold text-muted-foreground mb-3">STATS ADDITIONNELLES</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="text-center bg-secondary/50 p-3 rounded-lg">
+                    <p className="text-2xl font-display font-bold text-foreground">{seasonStats.STL.toFixed(1)}</p>
+                    <p className="text-xs text-muted-foreground mt-1">STL</p>
+                  </div>
+                  <div className="text-center bg-secondary/50 p-3 rounded-lg">
+                    <p className="text-2xl font-display font-bold text-foreground">{seasonStats.BLK.toFixed(1)}</p>
+                    <p className="text-xs text-muted-foreground mt-1">BLK</p>
+                  </div>
+                  <div className="text-center bg-secondary/50 p-3 rounded-lg">
+                    <p className="text-2xl font-display font-bold text-foreground">{seasonStats.GP}</p>
+                    <p className="text-xs text-muted-foreground mt-1">GP</p>
+                  </div>
+                  <div className="text-center bg-secondary/50 p-3 rounded-lg">
+                    <p className="text-2xl font-display font-bold text-foreground">{seasonStats.MIN.toFixed(1)}</p>
+                    <p className="text-xs text-muted-foreground mt-1">MIN</p>
+                  </div>
+                </div>
               </div>
             </div>
           ) : null}
@@ -110,43 +162,47 @@ export function PlayerDashboard({ player }: PlayerDashboardProps) {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-foreground">
                 <Activity className="h-5 w-5 text-primary" />
-                5 Derniers Matchs
+                Derniers Matchs
               </CardTitle>
             </CardHeader>
             <CardContent>
               {recentLoading ? (
                 <p className="text-muted-foreground text-center">Loading recent games...</p>
               ) : recentGames && recentGames.length > 0 ? (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Matchup</TableHead>
-                      <TableHead>W/L</TableHead>
-                      <TableHead>PTS</TableHead>
-                      <TableHead>REB</TableHead>
-                      <TableHead>AST</TableHead>
-                      <TableHead>MIN</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {recentGames.slice(0, 5).map((game, idx) => (
-                      <TableRow key={idx}>
-                        <TableCell className="font-medium">{game.GAME_DATE}</TableCell>
-                        <TableCell>{game.MATCHUP}</TableCell>
-                        <TableCell>
-                          <span className={game.WL === "W" ? "text-win-green" : "text-loss-red"}>
-                            {game.WL}
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-primary font-bold">{game.PTS}</TableCell>
-                        <TableCell>{game.REB}</TableCell>
-                        <TableCell>{game.AST}</TableCell>
-                        <TableCell>{game.MIN}</TableCell>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Matchup</TableHead>
+                        <TableHead className="text-center">W/L</TableHead>
+                        <TableHead className="text-center">PTS</TableHead>
+                        <TableHead className="text-center">REB</TableHead>
+                        <TableHead className="text-center">AST</TableHead>
+                        <TableHead className="text-center">MIN</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {recentGames.map((game, idx) => (
+                        <TableRow key={idx} className="hover:bg-secondary/50 transition-colors">
+                          <TableCell className="font-medium">{game.GAME_DATE}</TableCell>
+                          <TableCell className="font-medium">{game.MATCHUP}</TableCell>
+                          <TableCell className="text-center">
+                            <span className={`font-bold ${game.WL === "W" ? "text-win-green" : "text-loss-red"}`}>
+                              {game.WL}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <span className="text-primary font-bold text-lg">{game.PTS}</span>
+                          </TableCell>
+                          <TableCell className="text-center text-nba-blue font-semibold">{game.REB}</TableCell>
+                          <TableCell className="text-center text-accent font-semibold">{game.AST}</TableCell>
+                          <TableCell className="text-center text-muted-foreground">{game.MIN}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               ) : (
                 <p className="text-muted-foreground text-center">No recent games found</p>
               )}

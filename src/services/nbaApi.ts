@@ -80,8 +80,8 @@ export const nbaApi = {
     return response.json();
   },
 
-  async getPlayerRecent(playerId: number): Promise<GameLog[]> {
-    const response = await fetch(`${API_BASE_URL}/player/${playerId}/recent`);
+  async getPlayerRecent(playerId: number, limit: number = 10): Promise<GameLog[]> {
+    const response = await fetch(`${API_BASE_URL}/player/${playerId}/recent?limit=${limit}`);
     if (!response.ok) throw new Error("Failed to fetch recent games");
     return response.json();
   },
