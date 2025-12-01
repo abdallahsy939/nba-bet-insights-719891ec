@@ -6,14 +6,14 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
-import { nbaApi, MatchPrediction, TodayGame } from "@/services/nbaApi";
-import { Zap, Brain } from "lucide-react";
+import { nbaApi, TodayGame } from "@/services/nbaApi";
+import { Zap, Brain, Trophy, Activity } from "lucide-react";
 import { getTeamCode } from "@/lib/teamMapping";
 
 interface MatchPredictionModalProps {
@@ -26,7 +26,6 @@ export function MatchPredictionModal({ open, onOpenChange, game }: MatchPredicti
   const [homeStarMissing, setHomeStarMissing] = useState(false);
   const [awayStarMissing, setAwayStarMissing] = useState(false);
 
-  // Build team IDs from game data using team code mapping
   const homeTeamId = game ? getTeamCode(game.homeTeam) : "";
   const awayTeamId = game ? getTeamCode(game.awayTeam) : "";
 
@@ -36,174 +35,135 @@ export function MatchPredictionModal({ open, onOpenChange, game }: MatchPredicti
     enabled: open && !!homeTeamId && !!awayTeamId,
   });
 
-  // Get confidence level styling
   const getConfidenceBadgeColor = (confidence: string) => {
     const lower = confidence.toLowerCase();
-    if (lower.includes("tight") || lower.includes("serré")) return "bg-amber-500/20 border-amber-500/50 text-amber-700";
-    if (lower.includes("solid") || lower.includes("solide")) return "bg-emerald-500/20 border-emerald-500/50 text-emerald-700";
-    if (lower.includes("blowout")) return "bg-red-500/20 border-red-500/50 text-red-700";
-    return "bg-primary/20 border-primary/50";
+    if (lower.includes("tight") || lower.includes("serré")) return "bg-amber-500/20 text-amber-700 border-amber-500/30";
+    if (lower.includes("solid") || lower.includes("solide")) return "bg-emerald-500/20 text-emerald-700 border-emerald-500/30";
+    if (lower.includes("blowout")) return "bg-red-500/20 text-red-700 border-red-500/30";
+    return "bg-primary/20";
   };
 
-  // Get winner badge color (purple/gold for AI distinction)
   const getWinnerColor = (winner: string) => {
-    if (winner === game?.homeTeam) {
-      return "text-purple-600 dark:text-purple-400";
-    }
-    return "text-amber-600 dark:text-amber-400";
+    return winner === game?.homeTeam ? "text-purple-600 dark:text-purple-400" : "text-amber-600 dark:text-amber-400";
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-2xl">
-            <Brain className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-            <Zap className="h-5 w-5 text-amber-500" />
-            Analyse IA - Pronostic du Match
+      <DialogContent className="sm:max-w-[550px] p-4 gap-4">
+        <DialogHeader className="pb-2 border-b">
+          <DialogTitle className="flex items-center gap-2 text-xl">
+            <Brain className="h-5 w-5 text-purple-600" />
+            Analyse IA <span className="text-muted-foreground text-base font-normal">- {game?.awayTeam} @ {game?.homeTeam}</span>
           </DialogTitle>
-          <DialogDescription>
-            {game && `${game.awayTeam} @ ${game.homeTeam}`}
-          </DialogDescription>
         </DialogHeader>
 
         {isLoading ? (
-          <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 dark:border-purple-400"></div>
+          <div className="flex items-center justify-center py-10">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
           </div>
         ) : prediction ? (
-          <div className="space-y-6">
-            {/* Winner Prediction */}
-            <Card className="bg-gradient-to-br from-purple-600/10 to-amber-500/10 border-purple-500/30">
-              <CardHeader>
-                <CardTitle className="text-lg">Pronostic du Vainqueur</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-3">
-                  <div className={`text-4xl font-display font-bold ${getWinnerColor(prediction.predicted_winner)}`}>
-                    {prediction.predicted_winner}
+          <div className="grid gap-3">
+            {/* Top Row: Winner & Probability */}
+            <Card className="bg-gradient-to-r from-purple-500/5 to-amber-500/5 border-purple-200 dark:border-purple-800">
+              <CardContent className="p-3 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Trophy className="h-8 w-8 text-yellow-500" />
+                  <div>
+                    <p className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Vainqueur Prédit</p>
+                    <div className={`text-xl font-bold leading-tight ${getWinnerColor(prediction.predicted_winner)}`}>
+                      {prediction.predicted_winner}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <Progress value={prediction.win_probability_home} className="flex-1 h-3" />
-                    <span className="font-bold text-lg text-purple-600 dark:text-purple-400">
-                      {prediction.win_probability_home.toFixed(1)}%
-                    </span>
+                </div>
+                <div className="text-right min-w-[100px]">
+                  <p className="text-xs text-muted-foreground mb-1">Confiance IA</p>
+                  <div className="flex items-center gap-2 justify-end">
+                    <span className="font-bold text-lg">{prediction.win_probability_home.toFixed(0)}%</span>
                   </div>
+                  <Progress value={prediction.win_probability_home} className="h-2 w-full mt-1" />
                 </div>
               </CardContent>
             </Card>
 
-            {/* Spread & Confidence */}
-            <div className="grid grid-cols-2 gap-4">
-              <Card className="border-amber-500/30 bg-amber-500/5">
-                <CardHeader>
-                  <CardTitle className="text-base">Écart Prévu (Spread)</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-3xl font-display font-bold text-amber-600 dark:text-amber-400">
-                    {prediction.predicted_winner === game?.homeTeam ? "+" : "-"}{Math.abs(prediction.details.spread_raw).toFixed(1)}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">{prediction.predicted_winner}</p>
-                </CardContent>
-              </Card>
-
-              <Card className="border-purple-500/30 bg-purple-500/5">
-                <CardHeader>
-                  <CardTitle className="text-base">Confiance</CardTitle>
-                </CardHeader>
-                <CardContent className="flex items-center justify-center h-24">
-                  <Badge className={getConfidenceBadgeColor(prediction.confidence_level)}>
+            {/* Middle Row: Grid 2 Columns */}
+            <div className="grid grid-cols-2 gap-3">
+              {/* Spread & Confidence */}
+              <Card className="p-3 flex flex-col justify-center bg-secondary/20">
+                <div className="flex justify-between items-start mb-2">
+                  <span className="text-xs font-semibold text-muted-foreground">ÉCART & NIVEAU</span>
+                  <Badge variant="outline" className={`text-[10px] px-1 py-0 ${getConfidenceBadgeColor(prediction.confidence_level)}`}>
                     {prediction.confidence_level}
                   </Badge>
-                </CardContent>
+                </div>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-2xl font-bold">
+                    {prediction.predicted_winner === game?.homeTeam ? "+" : "-"}{Math.abs(prediction.details.spread_raw).toFixed(1)}
+                  </span>
+                  <span className="text-xs text-muted-foreground">pts</span>
+                </div>
+              </Card>
+
+              {/* Total Points */}
+              <Card className="p-3 flex flex-col justify-center bg-secondary/20">
+                <div className="flex justify-between items-start mb-2">
+                  <span className="text-xs font-semibold text-muted-foreground">SCORE TOTAL</span>
+                  <Activity className="h-3 w-3 text-muted-foreground" />
+                </div>
+                <div className="flex items-baseline gap-1">
+                  <span className="text-2xl font-bold text-teal-600 dark:text-teal-400">
+                    {prediction.predicted_total_points.toFixed(0)}
+                  </span>
+                  <span className="text-xs text-muted-foreground">pts combinés</span>
+                </div>
               </Card>
             </div>
 
-            {/* Key Factors */}
-            <Card className="border-indigo-500/30 bg-indigo-500/5">
-              <CardHeader>
-                <CardTitle className="text-lg">Facteurs Clés</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <div className="text-sm font-semibold text-muted-foreground">Net Rating - Équipes</div>
-                    <div className="flex justify-between items-center p-3 bg-secondary/50 rounded-lg">
-                      <div>
-                        <p className="text-sm font-medium">{game?.homeTeam}</p>
-                        <p className="text-2xl font-display font-bold text-purple-600 dark:text-purple-400">
-                          {prediction.details.home_net_rtg.toFixed(1)}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm font-medium">{game?.awayTeam}</p>
-                        <p className="text-2xl font-display font-bold text-amber-600 dark:text-amber-400">
-                          {prediction.details.away_net_rtg.toFixed(1)}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="text-sm font-semibold text-muted-foreground">Marge Prédite</div>
-                    <div className="p-3 bg-secondary/50 rounded-lg">
-                      <p className="text-2xl font-display font-bold text-indigo-600 dark:text-indigo-400">
-                        {Math.abs(prediction.predicted_margin).toFixed(1)}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">Points d'écart</p>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Net Rating Comparison (Compact) */}
+            <div className="bg-secondary/30 rounded-md p-2 text-sm flex justify-between items-center px-4">
+              <div className="text-left">
+                <span className="block text-[10px] text-muted-foreground">{game?.homeTeam} Rating</span>
+                <span className="font-bold text-purple-600">{prediction.details.home_net_rtg.toFixed(1)}</span>
+              </div>
+              <div className="text-xs font-medium text-muted-foreground">VS</div>
+              <div className="text-right">
+                <span className="block text-[10px] text-muted-foreground">{game?.awayTeam} Rating</span>
+                <span className="font-bold text-amber-600">{prediction.details.away_net_rtg.toFixed(1)}</span>
+              </div>
+            </div>
 
-            {/* Star Missing Checkboxes */}
-            <Card className="border-orange-500/30 bg-orange-500/5">
-              <CardHeader>
-                <CardTitle className="text-base">Options d'Analyse</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center gap-3 p-3 bg-secondary/30 rounded-lg cursor-pointer hover:bg-secondary/50 transition-colors"
-                  onClick={() => setHomeStarMissing(!homeStarMissing)}>
-                  <Checkbox checked={homeStarMissing} onCheckedChange={setHomeStarMissing} />
-                  <label className="flex-1 text-sm font-medium cursor-pointer">
-                    Star {game?.homeTeam} Absente
-                  </label>
-                </div>
-                <div className="flex items-center gap-3 p-3 bg-secondary/30 rounded-lg cursor-pointer hover:bg-secondary/50 transition-colors"
-                  onClick={() => setAwayStarMissing(!awayStarMissing)}>
-                  <Checkbox checked={awayStarMissing} onCheckedChange={setAwayStarMissing} />
-                  <label className="flex-1 text-sm font-medium cursor-pointer">
-                    Star {game?.awayTeam} Absente
-                  </label>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Options (Inline) */}
+            <div className="flex gap-4 items-center justify-between px-1">
+              <label className="flex items-center gap-2 text-xs cursor-pointer hover:text-primary transition-colors">
+                <Checkbox 
+                  checked={homeStarMissing} 
+                  onCheckedChange={setHomeStarMissing} 
+                  className="h-4 w-4"
+                />
+                <span>Star {game?.homeTeam} OUT</span>
+              </label>
+              <label className="flex items-center gap-2 text-xs cursor-pointer hover:text-primary transition-colors">
+                <Checkbox 
+                  checked={awayStarMissing} 
+                  onCheckedChange={setAwayStarMissing}
+                  className="h-4 w-4"
+                />
+                <span>Star {game?.awayTeam} OUT</span>
+              </label>
+            </div>
 
-            {/* Total Points */}
-            <Card className="bg-gradient-to-r from-teal-500/10 to-cyan-500/10 border-teal-500/30">
-              <CardHeader>
-                <CardTitle className="text-base">Score Total Prévu</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-4xl font-display font-bold text-teal-600 dark:text-teal-400">
-                  {prediction.predicted_total_points.toFixed(0)}
-                </p>
-                <p className="text-xs text-muted-foreground mt-2">Points combinés des deux équipes</p>
-              </CardContent>
-            </Card>
-
-            <div className="flex gap-2">
-              <Button onClick={() => refetch()} variant="outline" className="flex-1">
-                Actualiser l'Analyse
+            {/* Actions */}
+            <div className="flex gap-2 mt-1">
+              <Button onClick={() => refetch()} variant="outline" size="sm" className="flex-1 h-8 text-xs">
+                Actualiser
               </Button>
-              <Button onClick={() => onOpenChange(false)} className="flex-1">
+              <Button onClick={() => onOpenChange(false)} size="sm" className="flex-1 h-8 text-xs">
                 Fermer
               </Button>
             </div>
           </div>
         ) : (
-          <div className="text-center py-8 text-muted-foreground">
-            Impossible de charger le pronostic. Veuillez réessayer.
+          <div className="text-center py-6 text-muted-foreground text-sm">
+            Données indisponibles.
           </div>
         )}
       </DialogContent>
