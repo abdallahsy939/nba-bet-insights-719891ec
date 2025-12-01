@@ -432,22 +432,22 @@ export function PlayerDashboard({ player }: PlayerDashboardProps) {
               </div>
 
               {trendResult && (
-                <div className="bg-primary/10 border border-primary/20 p-6 rounded-lg">
-                  <div className="grid grid-cols-3 gap-4 mb-4">
+                <div className="bg-primary/10 border border-primary/20 p-4 rounded-lg">
+                  <div className="grid grid-cols-3 gap-3 mb-3">
                     <div className="text-center">
-                      <p className="text-3xl font-bold text-primary">{trendResult.current_active_streak}</p>
-                      <p className="text-sm text-muted-foreground mt-1">Current Streak</p>
+                      <p className="text-2xl font-bold text-primary">{trendResult.current_active_streak}</p>
+                      <p className="text-xs text-muted-foreground mt-1">Current Streak</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-3xl font-bold text-accent">{trendResult.total_hits}</p>
-                      <p className="text-sm text-muted-foreground mt-1">Total Hits</p>
+                      <p className="text-2xl font-bold text-accent">{trendResult.total_hits}</p>
+                      <p className="text-xs text-muted-foreground mt-1">Total Hits</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-3xl font-bold text-nba-blue">{trendResult.hit_rate_percent.toFixed(1)}%</p>
-                      <p className="text-sm text-muted-foreground mt-1">Hit Rate</p>
+                      <p className="text-2xl font-bold text-nba-blue">{trendResult.hit_rate_percent.toFixed(1)}%</p>
+                      <p className="text-xs text-muted-foreground mt-1">Hit Rate</p>
                     </div>
                   </div>
-                  <p className="text-foreground text-center">{trendResult.message}</p>
+                  <p className="text-sm text-foreground text-center">{trendResult.message}</p>
                 </div>
               )}
             </CardContent>
