@@ -1,14 +1,25 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
-import { nbaApi } from "@/services/nbaApi";
-import { Calendar } from "lucide-react";
+import { nbaApi, TodayGame } from "@/services/nbaApi";
+import { Calendar, Brain } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { MatchPredictionModal } from "./MatchPredictionModal";
 
 export function Scoreboard() {
+  const [selectedGame, setSelectedGame] = useState<TodayGame | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+
   const { data: games, isLoading } = useQuery({
     queryKey: ["48h-games"],
     queryFn: () => nbaApi.get48hGames(),
     refetchInterval: 60000,
   });
+
+  const handleAnalyzeClick = (game: TodayGame) => {
+    setSelectedGame(game);
+    setModalOpen(true);
+  };
 
   if (isLoading) {
     return (
@@ -70,7 +81,7 @@ export function Scoreboard() {
               {dateGames.map((game) => (
                 <div
                   key={game.gameId}
-                  className="bg-secondary/50 p-4 rounded-lg border border-border hover:border-primary/50 transition-colors relative"
+                  className="bg-secondary/50 p-4 rounded-lg border border-border hover:border-primary/50 transition-colors relative flex flex-col"
                 >
                   {game.isLive && (
                     <div className="absolute top-2 right-2 flex items-center gap-1">
@@ -81,7 +92,7 @@ export function Scoreboard() {
                       <span className="text-xs font-bold text-red-500">LIVE</span>
                     </div>
                   )}
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-2 flex-1">
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-display font-semibold text-foreground text-sm flex-1 min-w-0 truncate" title={game.awayTeam}>
                         {game.awayTeam}
@@ -103,12 +114,29 @@ export function Scoreboard() {
                       {game.status}
                     </div>
                   </div>
+                  <div className="mt-3 pt-3 border-t border-border">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="w-full text-xs h-8 gap-1.5 hover:bg-purple-500/20 hover:border-purple-500/50"
+                      onClick={() => handleAnalyzeClick(game)}
+                    >
+                      <Brain className="h-3.5 w-3.5" />
+                      Analyser
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
         ))}
       </CardContent>
+
+      <MatchPredictionModal
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+        game={selectedGame}
+      />
     </Card>
   );
 }

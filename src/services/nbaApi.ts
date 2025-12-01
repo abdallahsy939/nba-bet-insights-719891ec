@@ -64,10 +64,37 @@ export interface VsTeamStats {
   PRA: number;
   PA: number;
   PR: number;
-  AR: number; // <--- AJOUTER ICI
+  AR: number;
   STL: number;
   BLK: number;
   OPPONENT?: string;
+}
+
+export interface MatchPrediction {
+  home_team: string;
+  away_team: string;
+  predicted_winner: string;
+  win_probability: number;
+  spread: number;
+  total_points: number;
+  confidence_level: string;
+  home_net_rating: number;
+  away_net_rating: number;
+  pace: number;
+}
+
+export interface PlayerProjection {
+  player_id: number;
+  player_name: string;
+  opponent_team: string;
+  projected_pts: number;
+  projected_reb: number;
+  projected_ast: number;
+  season_avg_pts: number;
+  season_avg_reb: number;
+  season_avg_ast: number;
+  pace: number;
+  opponent_defense_rating: number;
 }
 
 export const nbaApi = {
@@ -107,6 +134,30 @@ export const nbaApi = {
       `${API_BASE_URL}/player/${playerId}/trend?stat=${stat}&threshold=${threshold}`
     );
     if (!response.ok) throw new Error("Failed to analyze trend");
+    return response.json();
+  },
+
+  async predictMatch(
+    homeTeamId: string,
+    awayTeamId: string,
+    homeStarMissing?: boolean,
+    awayStarMissing?: boolean
+  ): Promise<MatchPrediction> {
+    const params = new URLSearchParams();
+    if (homeStarMissing) params.append("home_star_missing", "true");
+    if (awayStarMissing) params.append("away_star_missing", "true");
+    const queryString = params.toString() ? `?${params.toString()}` : "";
+    const response = await fetch(`${API_BASE_URL}/predict/match/${homeTeamId}/${awayTeamId}${queryString}`);
+    if (!response.ok) throw new Error("Failed to predict match");
+    return response.json();
+  },
+
+  async predictPlayerStats(
+    playerId: number,
+    opponentTeamId: string
+  ): Promise<PlayerProjection> {
+    const response = await fetch(`${API_BASE_URL}/predict/player/${playerId}/vs/${opponentTeamId}`);
+    if (!response.ok) throw new Error("Failed to predict player stats");
     return response.json();
   },
 };

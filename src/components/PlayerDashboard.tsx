@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { nbaApi, Player } from "@/services/nbaApi";
 import { TrendingUp, Activity, Target } from "lucide-react";
 import { useState } from "react";
+import { PlayerProjectionCard } from "./PlayerProjectionCard";
 
 interface PlayerDashboardProps {
   player: Player;
@@ -299,6 +300,14 @@ export function PlayerDashboard({ player }: PlayerDashboardProps) {
                   {vsTeamLoading ? "Chargement..." : "Rechercher"}
                 </Button>
               </div>
+
+              {searchedTeam && (
+                <PlayerProjectionCard
+                  player={player}
+                  opponentTeamCode={searchedTeam}
+                  opponentTeamName={vsTeamStats?.OPPONENT || searchedTeam}
+                />
+              )}
 
               {vsTeamLoading ? (
                 <div className="flex flex-col items-center justify-center py-12">
