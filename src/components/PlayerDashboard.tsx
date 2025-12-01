@@ -29,10 +29,10 @@ export function PlayerDashboard({ player }: PlayerDashboardProps) {
     queryFn: () => nbaApi.getPlayerRecent(player.id, 10),
   });
 
-  const { data: vsTeamStats, isLoading: vsTeamLoading, refetch: refetchVsTeam } = useQuery({
+  const { data: vsTeamStats, isLoading: vsTeamLoading } = useQuery({
     queryKey: ["player-vs-team", player.id, searchedTeam],
     queryFn: () => nbaApi.getPlayerVsTeam(player.id, searchedTeam!),
-    enabled: false,
+    enabled: searchedTeam !== null && searchedTeam !== undefined && searchedTeam !== "",
   });
 
   const { data: trendResult, refetch: analyzeTrend, isFetching: trendLoading } = useQuery({
@@ -41,11 +41,10 @@ export function PlayerDashboard({ player }: PlayerDashboardProps) {
     enabled: false,
   });
 
-  const handleVsTeamSearch = async () => {
+  const handleVsTeamSearch = () => {
     const teamCode = vsTeamInput.trim().toUpperCase();
     if (teamCode) {
       setSearchedTeam(teamCode);
-      await refetchVsTeam();
     }
   };
 
