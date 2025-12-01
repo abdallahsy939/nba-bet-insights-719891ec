@@ -21,6 +21,7 @@ export function PlayerDashboard({ player }: PlayerDashboardProps) {
   const [searchedTeam, setSearchedTeam] = useState<string | null>(null);
   const [trendStat, setTrendStat] = useState("PTS");
   const [trendThreshold, setTrendThreshold] = useState("");
+  const [showImpactAnalyzer, setShowImpactAnalyzer] = useState(false);
 
   const { data: seasonStats, isLoading: seasonLoading } = useQuery({
     queryKey: ["player-season", player.id],
