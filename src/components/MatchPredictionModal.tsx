@@ -183,25 +183,144 @@ export function MatchPredictionModal({ open, onOpenChange, game }: MatchPredicti
               </div>
             </div>
 
-            {/* Options (Inline) */}
-            <div className="flex gap-4 items-center justify-between px-1">
-              <label className="flex items-center gap-2 text-xs cursor-pointer hover:text-primary transition-colors">
-                <Checkbox 
-                  checked={homeStarMissing} 
-                  onCheckedChange={setHomeStarMissing} 
-                  className="h-4 w-4"
-                />
-                <span>Star {game?.homeTeam} OUT</span>
-              </label>
-              <label className="flex items-center gap-2 text-xs cursor-pointer hover:text-primary transition-colors">
-                <Checkbox 
-                  checked={awayStarMissing} 
-                  onCheckedChange={setAwayStarMissing}
-                  className="h-4 w-4"
-                />
-                <span>Star {game?.awayTeam} OUT</span>
-              </label>
+            {/* Missing Players Selection */}
+            <div className="space-y-4">
+              {/* Home Missing Players */}
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground block mb-2">ABSENTS {game?.homeTeam}</label>
+                <Popover open={homePopoverOpen} onOpenChange={setHomePopoverOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={homePopoverOpen}
+                      className="w-full justify-between text-left font-normal"
+                    >
+                      <span className="text-muted-foreground">
+                        {homeMissingPlayers.length === 0 ? "Rechercher des joueurs..." : `${homeMissingPlayers.length} joueur(s) sélectionné(s)`}
+                      </span>
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0" align="start">
+                    <Command>
+                      <Input
+                        placeholder="Chercher par nom..."
+                        value={homeSearchQuery}
+                        onChange={(e) => setHomeSearchQuery(e.target.value)}
+                        className="border-0 border-b rounded-none focus-visible:ring-0"
+                      />
+                      <CommandList>
+                        <CommandEmpty>Aucun joueur trouvé.</CommandEmpty>
+                        <CommandGroup>
+                          {homePlayerSearchResults.map((player) => (
+                            <CommandItem
+                              key={player.id}
+                              value={player.full_name}
+                              onSelect={() => addHomeMissingPlayer(player)}
+                              disabled={homeMissingPlayers.find(p => p.id === player.id) !== undefined}
+                            >
+                              {player.full_name}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+                {homeMissingPlayers.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {homeMissingPlayers.map((player) => (
+                      <Badge key={player.id} variant="secondary" className="gap-1">
+                        {player.full_name}
+                        <button
+                          onClick={() => removeHomeMissingPlayer(player.id)}
+                          className="ml-1 hover:text-foreground"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Away Missing Players */}
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground block mb-2">ABSENTS {game?.awayTeam}</label>
+                <Popover open={awayPopoverOpen} onOpenChange={setAwayPopoverOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={awayPopoverOpen}
+                      className="w-full justify-between text-left font-normal"
+                    >
+                      <span className="text-muted-foreground">
+                        {awayMissingPlayers.length === 0 ? "Rechercher des joueurs..." : `${awayMissingPlayers.length} joueur(s) sélectionné(s)`}
+                      </span>
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0" align="start">
+                    <Command>
+                      <Input
+                        placeholder="Chercher par nom..."
+                        value={awaySearchQuery}
+                        onChange={(e) => setAwaySearchQuery(e.target.value)}
+                        className="border-0 border-b rounded-none focus-visible:ring-0"
+                      />
+                      <CommandList>
+                        <CommandEmpty>Aucun joueur trouvé.</CommandEmpty>
+                        <CommandGroup>
+                          {awayPlayerSearchResults.map((player) => (
+                            <CommandItem
+                              key={player.id}
+                              value={player.full_name}
+                              onSelect={() => addAwayMissingPlayer(player)}
+                              disabled={awayMissingPlayers.find(p => p.id === player.id) !== undefined}
+                            >
+                              {player.full_name}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+                {awayMissingPlayers.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {awayMissingPlayers.map((player) => (
+                      <Badge key={player.id} variant="secondary" className="gap-1">
+                        {player.full_name}
+                        <button
+                          onClick={() => removeAwayMissingPlayer(player.id)}
+                          className="ml-1 hover:text-foreground"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
+
+            {/* Absences Impact Display */}
+            {prediction?.absences_impact && (homeMissingPlayers.length > 0 || awayMissingPlayers.length > 0) && (
+              <div className="flex gap-2">
+                {prediction.absences_impact.home_penalty > 0 && (
+                  <Badge className="bg-red-500/20 text-red-700 border-red-500/30 flex-1 justify-center">
+                    Impact {game?.homeTeam}: -{prediction.absences_impact.home_penalty.toFixed(1)} pts
+                  </Badge>
+                )}
+                {prediction.absences_impact.away_penalty > 0 && (
+                  <Badge className="bg-red-500/20 text-red-700 border-red-500/30 flex-1 justify-center">
+                    Impact {game?.awayTeam}: -{prediction.absences_impact.away_penalty.toFixed(1)} pts
+                  </Badge>
+                )}
+              </div>
+            )}
 
             {/* Actions */}
             <div className="flex gap-2 mt-1">
