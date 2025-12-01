@@ -15,7 +15,7 @@ interface PlayerDashboardProps {
 
 export function PlayerDashboard({ player }: PlayerDashboardProps) {
   const [vsTeamInput, setVsTeamInput] = useState("");
-  const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
+  const [searchedTeam, setSearchedTeam] = useState<string | null>(null);
   const [trendStat, setTrendStat] = useState("PTS");
   const [trendThreshold, setTrendThreshold] = useState("");
 
@@ -29,10 +29,10 @@ export function PlayerDashboard({ player }: PlayerDashboardProps) {
     queryFn: () => nbaApi.getPlayerRecent(player.id, 10),
   });
 
-  const { data: vsTeamStats, isLoading: vsTeamLoading } = useQuery({
-    queryKey: ["player-vs-team", player.id, selectedTeam],
-    queryFn: () => nbaApi.getPlayerVsTeam(player.id, selectedTeam!),
-    enabled: !!selectedTeam,
+  const { data: vsTeamStats, isLoading: vsTeamLoading, refetch: refetchVsTeam } = useQuery({
+    queryKey: ["player-vs-team", player.id, searchedTeam],
+    queryFn: () => nbaApi.getPlayerVsTeam(player.id, searchedTeam!),
+    enabled: false,
   });
 
   const { data: trendResult, refetch: analyzeTrend, isFetching: trendLoading } = useQuery({
@@ -41,9 +41,11 @@ export function PlayerDashboard({ player }: PlayerDashboardProps) {
     enabled: false,
   });
 
-  const handleVsTeamSearch = () => {
-    if (vsTeamInput.trim()) {
-      setSelectedTeam(vsTeamInput.trim().toUpperCase());
+  const handleVsTeamSearch = async () => {
+    const teamCode = vsTeamInput.trim().toUpperCase();
+    if (teamCode) {
+      setSearchedTeam(teamCode);
+      await refetchVsTeam();
     }
   };
 
@@ -235,64 +237,75 @@ export function PlayerDashboard({ player }: PlayerDashboardProps) {
                   type="text"
                   placeholder="Ex: LAL, GSW, BOS..."
                   value={vsTeamInput}
-                  onChange={(e) => setVsTeamInput(e.target.value)}
+                  onChange={(e) => setVsTeamInput(e.target.value.toUpperCase())}
                   onKeyPress={(e) => e.key === "Enter" && handleVsTeamSearch()}
                   className="flex-1"
                 />
-                <Button onClick={handleVsTeamSearch}>Rechercher</Button>
+                <Button onClick={handleVsTeamSearch} disabled={vsTeamLoading || !vsTeamInput.trim()}>
+                  {vsTeamLoading ? "Chargement..." : "Rechercher"}
+                </Button>
               </div>
 
               {vsTeamLoading ? (
-                <p className="text-muted-foreground text-center">Loading stats...</p>
-              ) : vsTeamStats && vsTeamStats.games && vsTeamStats.games.length > 0 ? (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Matchup</TableHead>
-                        <TableHead className="text-center">W/L</TableHead>
-                        <TableHead className="text-center">PTS</TableHead>
-                        <TableHead className="text-center">REB</TableHead>
-                        <TableHead className="text-center">AST</TableHead>
-                        <TableHead className="text-center font-bold">PRA</TableHead>
-                        <TableHead className="text-center font-bold">PA</TableHead>
-                        <TableHead className="text-center font-bold">PR</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {vsTeamStats.games.map((game, idx) => (
-                        <TableRow key={idx} className="hover:bg-secondary/50 transition-colors">
-                          <TableCell className="font-medium">{game.GAME_DATE}</TableCell>
-                          <TableCell className="font-medium">{game.MATCHUP}</TableCell>
-                          <TableCell className="text-center">
-                            <span className={`font-bold ${game.WL === "W" ? "text-win" : "text-loss"}`}>
-                              {game.WL}
-                            </span>
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <span className="text-primary font-bold text-lg">{game.PTS}</span>
-                          </TableCell>
-                          <TableCell className="text-center text-nba-blue font-semibold">{game.REB}</TableCell>
-                          <TableCell className="text-center text-accent font-semibold">{game.AST}</TableCell>
-                          <TableCell className="text-center">
-                            <span className="text-primary font-bold text-lg">{game.PRA}</span>
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <span className="text-accent font-bold text-lg">{game.PA}</span>
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <span className="text-nba-blue font-bold text-lg">{game.PR}</span>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                <div className="flex flex-col items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-3"></div>
+                  <p className="text-muted-foreground">Chargement des statistiques...</p>
                 </div>
-              ) : selectedTeam ? (
-                <p className="text-muted-foreground text-center">No data found for {selectedTeam}</p>
+              ) : vsTeamStats && vsTeamStats.GP && vsTeamStats.GP > 0 ? (
+                <div className="space-y-6">
+                  <div className="text-center mb-6">
+                    <h3 className="text-2xl font-display font-bold text-foreground">
+                      Moyennes contre {vsTeamStats.OPPONENT}
+                    </h3>
+                    <p className="text-sm text-muted-foreground mt-1">sur {vsTeamStats.GP} matchs</p>
+                  </div>
+
+                  {/* Individual Stats */}
+                  <div>
+                    <h4 className="text-sm font-semibold text-muted-foreground mb-3">STATS INDIVIDUELLES</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      <div className="text-center bg-primary/10 p-6 rounded-lg border border-primary/20">
+                        <p className="text-4xl font-display font-bold text-primary">{vsTeamStats.PTS.toFixed(1)}</p>
+                        <p className="text-sm text-muted-foreground mt-2 font-medium">Points (PTS)</p>
+                      </div>
+                      <div className="text-center bg-nba-blue/10 p-6 rounded-lg border border-nba-blue/20">
+                        <p className="text-4xl font-display font-bold text-nba-blue">{vsTeamStats.REB.toFixed(1)}</p>
+                        <p className="text-sm text-muted-foreground mt-2 font-medium">Rebounds (REB)</p>
+                      </div>
+                      <div className="text-center bg-accent/10 p-6 rounded-lg border border-accent/20">
+                        <p className="text-4xl font-display font-bold text-accent">{vsTeamStats.AST.toFixed(1)}</p>
+                        <p className="text-sm text-muted-foreground mt-2 font-medium">Assists (AST)</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Combo Stats */}
+                  <div>
+                    <h4 className="text-sm font-semibold text-muted-foreground mb-3">COMBOS PARIS SPORTIFS</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      <div className="text-center bg-gradient-to-br from-primary/20 to-primary/5 p-6 rounded-lg border border-primary/20">
+                        <p className="text-3xl font-display font-bold text-primary">{vsTeamStats.PRA.toFixed(1)}</p>
+                        <p className="text-sm text-muted-foreground mt-2 font-medium">PTS+REB+AST</p>
+                      </div>
+                      <div className="text-center bg-gradient-to-br from-accent/20 to-accent/5 p-6 rounded-lg border border-accent/20">
+                        <p className="text-3xl font-display font-bold text-accent">{vsTeamStats.PA.toFixed(1)}</p>
+                        <p className="text-sm text-muted-foreground mt-2 font-medium">PTS+AST</p>
+                      </div>
+                      <div className="text-center bg-gradient-to-br from-nba-blue/20 to-nba-blue/5 p-6 rounded-lg border border-nba-blue/20">
+                        <p className="text-3xl font-display font-bold text-nba-blue">{vsTeamStats.PR.toFixed(1)}</p>
+                        <p className="text-sm text-muted-foreground mt-2 font-medium">PTS+REB</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : searchedTeam ? (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <p className="text-muted-foreground text-center">Aucune donnée disponible contre cette équipe.</p>
+                </div>
               ) : (
-                <p className="text-muted-foreground text-center">Enter a team abbreviation to search</p>
+                <div className="flex flex-col items-center justify-center py-12">
+                  <p className="text-muted-foreground text-center">Entrez un code d'équipe (ex: LAL, GSW) pour rechercher</p>
+                </div>
               )}
             </CardContent>
           </Card>
