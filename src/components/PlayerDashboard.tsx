@@ -250,7 +250,7 @@ export function PlayerDashboard({ player }: PlayerDashboardProps) {
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mb-3"></div>
                   <p className="text-muted-foreground">Chargement des statistiques...</p>
                 </div>
-              ) : vsTeamStats && vsTeamStats.GP && vsTeamStats.GP > 0 ? (
+              ) : vsTeamStats && typeof vsTeamStats === 'object' && vsTeamStats.GP && vsTeamStats.GP > 0 ? (
                 <div className="space-y-6">
                   <div className="text-center mb-6">
                     <h3 className="text-2xl font-display font-bold text-foreground">
@@ -264,15 +264,15 @@ export function PlayerDashboard({ player }: PlayerDashboardProps) {
                     <h4 className="text-sm font-semibold text-muted-foreground mb-3">STATS INDIVIDUELLES</h4>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                       <div className="text-center bg-primary/10 p-6 rounded-lg border border-primary/20">
-                        <p className="text-4xl font-display font-bold text-primary">{vsTeamStats.PTS.toFixed(1)}</p>
+                        <p className="text-4xl font-display font-bold text-primary">{vsTeamStats.PTS?.toFixed(1) ?? '0.0'}</p>
                         <p className="text-sm text-muted-foreground mt-2 font-medium">Points (PTS)</p>
                       </div>
                       <div className="text-center bg-nba-blue/10 p-6 rounded-lg border border-nba-blue/20">
-                        <p className="text-4xl font-display font-bold text-nba-blue">{vsTeamStats.REB.toFixed(1)}</p>
+                        <p className="text-4xl font-display font-bold text-nba-blue">{vsTeamStats.REB?.toFixed(1) ?? '0.0'}</p>
                         <p className="text-sm text-muted-foreground mt-2 font-medium">Rebounds (REB)</p>
                       </div>
                       <div className="text-center bg-accent/10 p-6 rounded-lg border border-accent/20">
-                        <p className="text-4xl font-display font-bold text-accent">{vsTeamStats.AST.toFixed(1)}</p>
+                        <p className="text-4xl font-display font-bold text-accent">{vsTeamStats.AST?.toFixed(1) ?? '0.0'}</p>
                         <p className="text-sm text-muted-foreground mt-2 font-medium">Assists (AST)</p>
                       </div>
                     </div>
@@ -283,15 +283,15 @@ export function PlayerDashboard({ player }: PlayerDashboardProps) {
                     <h4 className="text-sm font-semibold text-muted-foreground mb-3">COMBOS PARIS SPORTIFS</h4>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                       <div className="text-center bg-gradient-to-br from-primary/20 to-primary/5 p-6 rounded-lg border border-primary/20">
-                        <p className="text-3xl font-display font-bold text-primary">{vsTeamStats.PRA.toFixed(1)}</p>
+                        <p className="text-3xl font-display font-bold text-primary">{vsTeamStats.PRA?.toFixed(1) ?? '0.0'}</p>
                         <p className="text-sm text-muted-foreground mt-2 font-medium">PTS+REB+AST</p>
                       </div>
                       <div className="text-center bg-gradient-to-br from-accent/20 to-accent/5 p-6 rounded-lg border border-accent/20">
-                        <p className="text-3xl font-display font-bold text-accent">{vsTeamStats.PA.toFixed(1)}</p>
+                        <p className="text-3xl font-display font-bold text-accent">{vsTeamStats.PA?.toFixed(1) ?? '0.0'}</p>
                         <p className="text-sm text-muted-foreground mt-2 font-medium">PTS+AST</p>
                       </div>
                       <div className="text-center bg-gradient-to-br from-nba-blue/20 to-nba-blue/5 p-6 rounded-lg border border-nba-blue/20">
-                        <p className="text-3xl font-display font-bold text-nba-blue">{vsTeamStats.PR.toFixed(1)}</p>
+                        <p className="text-3xl font-display font-bold text-nba-blue">{vsTeamStats.PR?.toFixed(1) ?? '0.0'}</p>
                         <p className="text-sm text-muted-foreground mt-2 font-medium">PTS+REB</p>
                       </div>
                     </div>
@@ -299,7 +299,7 @@ export function PlayerDashboard({ player }: PlayerDashboardProps) {
                 </div>
               ) : searchedTeam ? (
                 <div className="flex flex-col items-center justify-center py-12">
-                  <p className="text-muted-foreground text-center">Aucune donnée disponible contre cette équipe.</p>
+                  <p className="text-muted-foreground text-center">Aucune donnée trouvée contre cette équipe.</p>
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center py-12">
