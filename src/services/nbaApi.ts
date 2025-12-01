@@ -163,12 +163,16 @@ export const nbaApi = {
   async predictMatch(
     homeTeamId: string,
     awayTeamId: string,
-    homeStarMissing?: boolean,
-    awayStarMissing?: boolean
+    homeMissingPlayerIds?: number[],
+    awayMissingPlayerIds?: number[]
   ): Promise<MatchPrediction> {
     const params = new URLSearchParams();
-    if (homeStarMissing) params.append("home_star_missing", "true");
-    if (awayStarMissing) params.append("away_star_missing", "true");
+    if (homeMissingPlayerIds && homeMissingPlayerIds.length > 0) {
+      homeMissingPlayerIds.forEach(id => params.append("home_missing_players", id.toString()));
+    }
+    if (awayMissingPlayerIds && awayMissingPlayerIds.length > 0) {
+      awayMissingPlayerIds.forEach(id => params.append("away_missing_players", id.toString()));
+    }
     const queryString = params.toString() ? `?${params.toString()}` : "";
     const response = await fetch(`${API_BASE_URL}/predict/match/${homeTeamId}/${awayTeamId}${queryString}`);
     if (!response.ok) throw new Error("Failed to predict match");
