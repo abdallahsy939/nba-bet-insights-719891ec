@@ -126,6 +126,38 @@ export interface MissingPlayerAnalysis {
   stats_without: PlayerStats;
 }
 
+export interface PlayerInfoMetrics {
+  pie: number;
+  net_rtg_individual: number;
+}
+
+export interface RatingStats {
+  win_pct: number;
+  off_rating_proxy: number;
+  def_rating_proxy: number;
+  net_rating_raw: number;
+}
+
+export interface ClutchImpact {
+  gp: number;
+  w_pct: number;
+  plus_minus: number;
+}
+
+export interface ImpactAnalysis {
+  net_rating_swing: number;
+  player_pie: number;
+  clutch_impact: ClutchImpact;
+  message: string;
+}
+
+export interface AdvancedAnalytics {
+  player_info: PlayerInfoMetrics;
+  stats_with: RatingStats;
+  stats_without: RatingStats;
+  impact_analysis: ImpactAnalysis;
+}
+
 export const nbaApi = {
   // CORRECTION ICI : passage à 30h pour correspondre au backend
   async get48hGames(): Promise<TodayGame[]> {
