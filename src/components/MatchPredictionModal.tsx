@@ -38,6 +38,7 @@ import {
   getFatigueFactor,
   getRestBadge,
 } from "@/lib/fatigueUtils";
+import { PlayerImpactSummary } from "@/components/PlayerImpactSummary";
 
 interface MatchPredictionModalProps {
   open: boolean;
