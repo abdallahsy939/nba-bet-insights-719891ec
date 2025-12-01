@@ -134,6 +134,12 @@ export const nbaApi = {
     return response.json();
   },
 
+  async getTeamRoster(teamId: string): Promise<Player[]> {
+    const response = await fetch(`${API_BASE_URL}/team/${teamId}/roster`);
+    if (!response.ok) throw new Error("Failed to fetch team roster");
+    return response.json();
+  },
+
   async getPlayerSeason(playerId: number): Promise<SeasonStats> {
     const response = await fetch(`${API_BASE_URL}/player/${playerId}/season`);
     if (!response.ok) throw new Error("Failed to fetch player season stats");
