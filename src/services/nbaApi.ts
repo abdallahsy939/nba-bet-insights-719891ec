@@ -235,7 +235,7 @@ export const nbaApi = {
   async analyzeMissingPlayer(
     teamCode: string,
     playerId: number
-  ): Promise<MissingPlayerAnalysis> {
+  ): Promise<AdvancedAnalytics> {
     const response = await fetch(`${API_BASE_URL}/analytics/team/${teamCode}/missing-player/${playerId}`);
     if (!response.ok) throw new Error("Failed to analyze missing player impact");
     return response.json();
