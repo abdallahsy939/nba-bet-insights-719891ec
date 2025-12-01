@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import {
   Dialog,
   DialogContent,
@@ -9,11 +9,23 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { useQuery } from "@tanstack/react-query";
-import { nbaApi, TodayGame } from "@/services/nbaApi";
-import { Zap, Brain, Trophy, Activity } from "lucide-react";
+import { nbaApi, TodayGame, Player } from "@/services/nbaApi";
+import { Brain, Trophy, Activity, X, ChevronsUpDown } from "lucide-react";
 import { getTeamCode } from "@/lib/teamMapping";
 
 interface MatchPredictionModalProps {
@@ -23,17 +35,57 @@ interface MatchPredictionModalProps {
 }
 
 export function MatchPredictionModal({ open, onOpenChange, game }: MatchPredictionModalProps) {
-  const [homeStarMissing, setHomeStarMissing] = useState(false);
-  const [awayStarMissing, setAwayStarMissing] = useState(false);
+  const [homeMissingPlayers, setHomeMissingPlayers] = useState<Player[]>([]);
+  const [awayMissingPlayers, setAwayMissingPlayers] = useState<Player[]>([]);
+  const [homeSearchQuery, setHomeSearchQuery] = useState("");
+  const [awaySearchQuery, setAwaySearchQuery] = useState("");
+  const [homePopoverOpen, setHomePopoverOpen] = useState(false);
+  const [awayPopoverOpen, setAwayPopoverOpen] = useState(false);
 
   const homeTeamId = game ? getTeamCode(game.homeTeam) : "";
   const awayTeamId = game ? getTeamCode(game.awayTeam) : "";
 
+  const { data: homePlayerSearchResults = [] } = useQuery({
+    queryKey: ["player-search", homeSearchQuery],
+    queryFn: () => nbaApi.searchPlayers(homeSearchQuery),
+    enabled: homeSearchQuery.length > 0,
+  });
+
+  const { data: awayPlayerSearchResults = [] } = useQuery({
+    queryKey: ["player-search", awaySearchQuery],
+    queryFn: () => nbaApi.searchPlayers(awaySearchQuery),
+    enabled: awaySearchQuery.length > 0,
+  });
+
   const { data: prediction, isLoading, refetch } = useQuery({
-    queryKey: ["match-prediction", homeTeamId, awayTeamId, homeStarMissing, awayStarMissing],
-    queryFn: () => nbaApi.predictMatch(homeTeamId, awayTeamId, homeStarMissing, awayStarMissing),
+    queryKey: ["match-prediction", homeTeamId, awayTeamId, homeMissingPlayers.map(p => p.id).join(","), awayMissingPlayers.map(p => p.id).join(",")],
+    queryFn: () => nbaApi.predictMatch(homeTeamId, awayTeamId, homeMissingPlayers.map(p => p.id), awayMissingPlayers.map(p => p.id)),
     enabled: open && !!homeTeamId && !!awayTeamId,
   });
+
+  const addHomeMissingPlayer = useCallback((player: Player) => {
+    if (!homeMissingPlayers.find(p => p.id === player.id)) {
+      setHomeMissingPlayers([...homeMissingPlayers, player]);
+    }
+    setHomeSearchQuery("");
+    setHomePopoverOpen(false);
+  }, [homeMissingPlayers]);
+
+  const addAwayMissingPlayer = useCallback((player: Player) => {
+    if (!awayMissingPlayers.find(p => p.id === player.id)) {
+      setAwayMissingPlayers([...awayMissingPlayers, player]);
+    }
+    setAwaySearchQuery("");
+    setAwayPopoverOpen(false);
+  }, [awayMissingPlayers]);
+
+  const removeHomeMissingPlayer = useCallback((playerId: number) => {
+    setHomeMissingPlayers(homeMissingPlayers.filter(p => p.id !== playerId));
+  }, [homeMissingPlayers]);
+
+  const removeAwayMissingPlayer = useCallback((playerId: number) => {
+    setAwayMissingPlayers(awayMissingPlayers.filter(p => p.id !== playerId));
+  }, [awayMissingPlayers]);
 
   const getConfidenceBadgeColor = (confidence: string) => {
     const lower = confidence.toLowerCase();
