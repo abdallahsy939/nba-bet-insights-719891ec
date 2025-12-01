@@ -4,11 +4,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import { nbaApi, Player } from "@/services/nbaApi";
-import { TrendingUp, Activity, Target } from "lucide-react";
+import { TrendingUp, Activity, Target, AlertCircle } from "lucide-react";
 import { useState } from "react";
 import { PlayerProjectionCard } from "./PlayerProjectionCard";
+import { getTeamCode } from "@/lib/teamMapping";
 
 interface PlayerDashboardProps {
   player: Player;
