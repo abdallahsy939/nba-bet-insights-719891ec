@@ -71,12 +71,14 @@ export interface VsTeamStats {
 }
 
 export interface AbsencesImpact {
-  home_penalty: number;
-  away_penalty: number;
+  home_total_penalty: number;
+  away_total_penalty: number;
 }
 
 export interface ContextAnalysis {
+  home_fatigue_penalty: number;
   home_fatigue_factors: string[];
+  away_fatigue_penalty: number;
   away_fatigue_factors: string[];
 }
 
