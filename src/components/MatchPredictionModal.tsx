@@ -518,21 +518,25 @@ export function MatchPredictionModal({
                   </PopoverContent>
                 </Popover>
                 {awayMissingPlayers.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-2">
+                  <div className="space-y-3 mt-2">
                     {awayMissingPlayers.map((player) => (
-                      <Badge
-                        key={player.id}
-                        variant="secondary"
-                        className="gap-1"
-                      >
-                        {player.full_name}
-                        <button
-                          onClick={() => removeAwayMissingPlayer(player.id)}
-                          className="ml-1 hover:text-foreground"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                      </Badge>
+                      <div key={player.id} className="space-y-1">
+                        <div className="flex items-center justify-between">
+                          <Badge variant="secondary" className="gap-1">
+                            {player.full_name}
+                            <button
+                              onClick={() => removeAwayMissingPlayer(player.id)}
+                              className="ml-1 hover:text-foreground"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </Badge>
+                        </div>
+                        <PlayerImpactSummary
+                          playerId={player.id}
+                          teamId={awayTeamId}
+                        />
+                      </div>
                     ))}
                   </div>
                 )}
